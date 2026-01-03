@@ -144,13 +144,13 @@ internal class SpawnDataManager
         float obstacleHeight;
         if (height.HasValue)
         {
-            obstacleHeight = height.Value * StaticBeatmapObjectSpawnMovementData.layerHeight;
+            obstacleHeight = height.Value; // * StaticBeatmapObjectSpawnMovementData.layerHeight;
         }
         else
         {
             // _topObstaclePosY =/= _obstacleTopPosY
             obstacleHeight = Mathf.Min(
-                obstacleData.height * StaticBeatmapObjectSpawnMovementData.layerHeight,
+                obstacleData.height, // * StaticBeatmapObjectSpawnMovementData.layerHeight,
                 _movementData._obstacleTopPosY - obstacleOffset.y);
         }
 

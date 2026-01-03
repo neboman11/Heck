@@ -174,7 +174,8 @@ internal static class ProcessNotesNoodleDataInTimeRow
                     }
 
                     noteData.SetCutDirectionAngleOffset(num);
-                    sliderData.SetCutDirectionAngleOffset(num, num);
+                    sliderData.SetHeadCutDirectionAngleOffset(num);
+                    sliderData.SetTailCutDirectionAngleOffset(num);
                 }
                 else
                 {

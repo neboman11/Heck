@@ -22,6 +22,12 @@ internal class NoodlePlayerInstaller : Installer
 
     public override void InstallBindings()
     {
+        if (_featuresModule == null)
+        {
+            Plugin.Log.Error("FeaturesModule was null in NoodlePlayerInstaller! Zenject failure?");
+            return;
+        }
+
         if (!_featuresModule.Active)
         {
             return;

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
 using HarmonyLib;
 using Heck.PlayView;
 using HMUI;
@@ -13,18 +11,6 @@ namespace Heck.HarmonyPatches;
 [HeckPatch]
 internal class PlayViewInterrupter : IAffinity
 {
-    private static readonly FieldInfo _menuTransitionHelperField = AccessTools.Field(
-        typeof(SinglePlayerLevelSelectionFlowCoordinator),
-        "_menuTransitionsHelper");
-
-    private static readonly ConstructorInfo _standardLevelParametersCtor =
-        AccessTools.FirstConstructor(typeof(StartStandardLevelParameters), _ => true);
-
-#if PRE_V1_37_1
-    private static readonly ConstructorInfo _multiplayerLevelParametersCtor =
-        AccessTools.FirstConstructor(typeof(StartMultiplayerLevelParameters), _ => true);
-#endif
-
     private readonly PlayViewManager _playViewManager;
     private readonly LobbyGameStateController _lobbyGameStateController;
     private readonly LobbyGameStateModel _lobbyGameStateModel;
@@ -41,35 +27,47 @@ internal class PlayViewInterrupter : IAffinity
         _lobbyGameStateModel = lobbyGameStateModel;
     }
 
-    // Get all the parameters used to make a StartStandardLevelParameters
-#pragma warning disable CS8321
-    [HarmonyReversePatch]
-    [HarmonyPatch(
+    [AffinityPrefix]
+    [AffinityPatch(
         typeof(SinglePlayerLevelSelectionFlowCoordinator),
         nameof(SinglePlayerLevelSelectionFlowCoordinator.StartLevel))]
-    private static StartStandardLevelParameters GetParameters(
-        SinglePlayerLevelSelectionFlowCoordinator instance,
+    private void StartLevelPrefix(
+        ref bool __runOriginal,
+        SinglePlayerLevelSelectionFlowCoordinator __instance,
         Action beforeSceneSwitchCallback,
         bool practice)
     {
-        throw new NotImplementedException("Reverse patch has not been executed.");
-
-        [UsedImplicitly]
-        IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        if (!__runOriginal)
         {
-            return new CodeMatcher(instructions)
-                .MatchForward(false, new CodeMatch(OpCodes.Ldfld, _menuTransitionHelperField))
-                .Advance(-1)
-                .SetOpcodeAndAdvance(OpCodes.Nop)
-                .RemoveInstructions(1)
-                .MatchForward(
-                    false,
-                    new CodeMatch(
-                        n => n.opcode == OpCodes.Callvirt &&
-                             ((MethodInfo)n.operand).Name == nameof(MenuTransitionsHelper.StartStandardLevel)))
-                .SetInstruction(new CodeInstruction(OpCodes.Newobj, _standardLevelParametersCtor))
-                .InstructionEnumeration();
+            return;
         }
+
+        StartStandardLevelParameters parameters =
+            new StartStandardLevelParameters(
+                __instance.gameMode,
+                __instance.selectedBeatmapKey,
+                __instance.selectedBeatmapLevel,
+                __instance._gameplaySetupViewController.environmentOverrideSettings,
+                __instance._gameplaySetupViewController.colorSchemesSettings.GetOverrideColorScheme(),
+                __instance._gameplaySetupViewController.colorSchemesSettings.ShouldOverrideLightshowColors(),
+                __instance._gameplaySetupViewController.colorSchemesSettings.GetOverrideColorScheme(),
+                __instance.gameplayModifiers,
+                __instance.playerSettings,
+                practice ? __instance._practiceViewController.practiceSettings : null,
+                __instance._environmentsListModel,
+                null,
+                __instance.actionButtonText,
+                false,
+                false,
+                beforeSceneSwitchCallback,
+                null,
+                __instance.HandleStandardLevelDidFinish,
+                __instance.HandleStandardLevelWasRestarted,
+                null
+            );
+
+        _playViewManager.Init(parameters);
+        __runOriginal = false;
     }
 
 #if !PRE_V1_37_1
@@ -94,54 +92,7 @@ internal class PlayViewInterrupter : IAffinity
             instance.HandleMultiplayerLevelDidFinish,
             instance.HandleMultiplayerLevelDidDisconnect);
     }
-#else
-    [HarmonyReversePatch]
-    [HarmonyPatch(typeof(LobbyGameStateController), nameof(LobbyGameStateController.StartMultiplayerLevel))]
-    private static StartMultiplayerLevelParameters GetMultiplayerParameters(
-        LobbyGameStateController instance,
-        ILevelGameplaySetupData gameplaySetupData,
-        IDifficultyBeatmap difficultyBeatmap,
-        Action beforeSceneSwitchCallback)
-    {
-        throw new NotImplementedException("Reverse patch has not been executed.");
-
-        [UsedImplicitly]
-        IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            return new CodeMatcher(instructions)
-                .Start()
-                .RemoveInstructions(7)
-                .MatchForward(
-                    false,
-                    new CodeMatch(
-                        n => n.opcode == OpCodes.Callvirt &&
-                             ((MethodInfo)n.operand).Name == nameof(MenuTransitionsHelper.StartMultiplayerLevel)))
-                .SetInstruction(new CodeInstruction(OpCodes.Newobj, _multiplayerLevelParametersCtor))
-                .InstructionEnumeration();
-        }
-    }
 #endif
-#pragma warning restore CS8321
-
-    [AffinityPrefix]
-    [AffinityPatch(
-        typeof(SinglePlayerLevelSelectionFlowCoordinator),
-        nameof(SinglePlayerLevelSelectionFlowCoordinator.StartLevel))]
-    private void StartLevelPrefix(
-        ref bool __runOriginal,
-        SinglePlayerLevelSelectionFlowCoordinator __instance,
-        Action beforeSceneSwitchCallback,
-        bool practice)
-    {
-        if (!__runOriginal)
-        {
-            return;
-        }
-
-        StartStandardLevelParameters parameters = GetParameters(__instance, beforeSceneSwitchCallback, practice);
-        _playViewManager.Init(parameters);
-        __runOriginal = false;
-    }
 
     [AffinityPostfix]
     [AffinityPatch(typeof(MultiplayerLevelLoader), nameof(MultiplayerLevelLoader.Tick))]
@@ -175,6 +126,7 @@ internal class PlayViewInterrupter : IAffinity
             ____difficultyBeatmap,
 #endif
             null!);
+
         _playViewManager.Init(parameters);
         _playViewManagerHasRun = true;
     }
@@ -220,8 +172,10 @@ internal class PlayViewInterrupter : IAffinity
         __instance.SetRightScreenViewController(null, animationType);
         __instance.SetBottomScreenViewController(null, animationType);
         __instance.SetTitle(null, animationType);
+
         FlowCoordinator flowCoordinator = __instance;
         flowCoordinator.showBackButton = true;
+
         return false;
     }
 

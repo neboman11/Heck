@@ -32,6 +32,7 @@ public class StartStandardLevelParameters
 #if !PRE_V1_37_1
         EnvironmentsListModel? environmentsListModel,
 #endif
+        GameplayAdditionalInformation? gameplayAdditionalInformation,
         string backButtonText,
         bool useTestNoteCutSoundEffects,
         bool startPaused,
@@ -41,7 +42,7 @@ public class StartStandardLevelParameters
 #endif
         Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults>? levelFinishedCallback,
 #if !V1_29_1
-        Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults>? levelRestartedCallback,
+        Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults>? levelRestartedCallback,
         RecordingToolManager.SetupData? recordingToolData)
 #else
         Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults>? levelRestartedCallback)
@@ -69,6 +70,7 @@ public class StartStandardLevelParameters
 #if !PRE_V1_37_1
         EnvironmentsListModel = environmentsListModel;
 #endif
+        GameplayAdditionalInformation = gameplayAdditionalInformation;
         BackButtonText = backButtonText;
         UseTestNoteCutSoundEffects = useTestNoteCutSoundEffects;
         StartPaused = startPaused;
@@ -149,6 +151,8 @@ public class StartStandardLevelParameters
     public EnvironmentsListModel? EnvironmentsListModel { get; }
 #endif
 
+    public GameplayAdditionalInformation? GameplayAdditionalInformation { get; }
+
     public string BackButtonText { get; }
 
     public bool UseTestNoteCutSoundEffects { get; }
@@ -159,7 +163,7 @@ public class StartStandardLevelParameters
 
     public Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults>? LevelFinishedCallback { get; }
 
-    public Action<LevelScenesTransitionSetupDataSO, LevelCompletionResults>? LevelRestartedCallback { get; }
+    public Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults>? LevelRestartedCallback { get; }
 
 #if !V1_29_1
     public RecordingToolManager.SetupData? RecordingToolData { get; }

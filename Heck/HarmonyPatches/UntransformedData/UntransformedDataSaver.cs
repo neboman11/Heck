@@ -29,7 +29,7 @@ public class HeckGameplayCoreSceneSetupData : GameplayCoreSceneSetupData
             original.gameplayModifiers,
             original.playerSpecificSettings,
             original.practiceSettings,
-            original.useTestNoteCutSoundEffects,
+            // original.useTestNoteCutSoundEffects,
 #if !PRE_V1_39_1
             original.targetEnvironmentInfo,
             original.originalEnvironmentInfo,
@@ -46,10 +46,12 @@ public class HeckGameplayCoreSceneSetupData : GameplayCoreSceneSetupData
             original._beatmapDataLoader,
             original._beatmapLevelsEntitlementModel,
             original._enableBeatmapDataCaching,
-            original._allowNullBeatmapLevelData,
 #if !PRE_V1_39_1
             original.environmentsListModel,
 #endif
+            original._allowNullBeatmapLevelData,
+            original._beatmapLevelsModel,
+            original.beatmapLevelData,
             original.recordingToolData)
     {
         GameplayCoreSceneSetupData @this = this;

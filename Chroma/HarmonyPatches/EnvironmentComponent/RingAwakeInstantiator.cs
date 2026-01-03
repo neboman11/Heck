@@ -55,7 +55,7 @@ internal static class RingAwakeInstantiator
 
             TrackLaneRingsManager managerref = manager;
             _containerAccessor(ref managerref) = container;
-            manager.Start();
+            // manager.Start();
         }
     }
 
@@ -79,16 +79,14 @@ internal static class RingAwakeInstantiator
     [HarmonyPatch(typeof(TrackLaneRingsManager), nameof(TrackLaneRingsManager.Start))]
     private static IEnumerable<CodeInstruction> QueueInjectTranspiler(IEnumerable<CodeInstruction> instructions)
     {
-        /*
-         * -- this._rings[i] = this._container.InstantiatePrefabForComponent<TrackLaneRing>(this._trackLaneRingPrefab);
-         * ++ this._rings[i] = QueueInject(this._container, this._trackLaneRingPrefab);
-         */
         return new CodeMatcher(instructions)
-            .MatchForward(false, new CodeMatch(OpCodes.Ldfld, _trackLaneRingPrefab))
-            .Repeat(
-                n => n
-                    .Advance(1)
-                    .Set(OpCodes.Call, _queueInject))
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldfld, _trackLaneRingPrefab),
+                new CodeMatch(op => op.opcode == OpCodes.Callvirt && ((MethodInfo)op.operand).Name == "InstantiatePrefabForComponent")
+            )
+            .Repeat(n => n
+                .Advance(1)
+                .Set(OpCodes.Call, _queueInject))
             .InstructionEnumeration();
     }
 }

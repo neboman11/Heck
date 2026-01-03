@@ -184,6 +184,7 @@ public sealed class PlayViewManager : IDisposable
             multiplayerStartParameters.OverrideColorScheme,
             multiplayerStartParameters.GameplayModifiers,
             multiplayerStartParameters.PlayerSpecificSettings,
+            multiplayerStartParameters.EnvironmentsListModel,
             multiplayerStartParameters.PracticeSettings,
             multiplayerStartParameters.BackButtonText,
             multiplayerStartParameters.UseTestNoteCutSoundEffects,
@@ -288,7 +289,7 @@ public sealed class PlayViewManager : IDisposable
             _currentParameters.PlayerOverrideLightshowColors,
 #endif
 #if !V1_29_1
-            _currentParameters.BeatmapOverrideColorScheme,
+            // _currentParameters.BeatmapOverrideColorScheme,
 #endif
             _currentParameters.GameplayModifiers,
             _currentParameters.PlayerSpecificSettings,
@@ -296,15 +297,16 @@ public sealed class PlayViewManager : IDisposable
 #if !PRE_V1_37_1
             _currentParameters.EnvironmentsListModel,
 #endif
-            _currentParameters.BackButtonText,
-            _currentParameters.UseTestNoteCutSoundEffects,
-            _currentParameters.StartPaused,
+            // _currentParameters.BackButtonText,
+            // _currentParameters.UseTestNoteCutSoundEffects,
+            // _currentParameters.StartPaused,
+            _currentParameters.GameplayAdditionalInformation,
             _currentParameters.BeforeSceneSwitchCallback,
             null,
             _currentParameters.LevelFinishedCallback,
 #if !V1_29_1
-            _currentParameters.LevelRestartedCallback,
-            _currentParameters.RecordingToolData);
+            _currentParameters.LevelRestartedCallback);
+        // _currentParameters.RecordingToolData);
 #else
             _currentParameters.LevelRestartedCallback);
 #endif
